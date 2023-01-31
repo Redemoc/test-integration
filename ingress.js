@@ -2,22 +2,19 @@
 function checkSurveyCompleted(currentQ) {
 	let surveyCompleted = false;
 	// find surveyCompleted
-	function checkSurveyCompleted(currentQ) {
-		let surveyCompleted = false;
-		// find surveyCompleted
 
-		var qCount = 1;
-		var validQue = false;
-		do {
-			var validQue = `${"%Q"+qCount+",text%"}`;
-			console.log("Print", validQue);
-									qCount++;
-		} while (validQue);
+	var qCount = 1;
+	var validQue = false;
+	do {
+		var validQue = `${"%Q"+qCount+",text%"}`;
+		console.log("Print", validQue);
+								qCount++;
+	} while (validQue);
 
-		if(validQue == qCount){
-			surveyCompleted = true;
-		}
-		return surveyCompleted;
+	if(validQue == qCount){
+		surveyCompleted = true;
+	}
+	return surveyCompleted;
 
 }
 
