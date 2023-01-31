@@ -3,7 +3,6 @@ const MAGIC_KEY =
 const INTEGRATION_KEY = "";
 const SURVEY_ID = "";
 
-
 function checkSurveyCompleted(currentQ) {
 	let surveyCompleted = false;
 	// find surveyCompleted
@@ -91,15 +90,14 @@ function checkSurveyCompleted(currentQ) {
 function handleButtonClick() {
 	var params = document.body.getElementsByTagName('script');
 	query = params[0].classList;
-	var param_a = query[0];
-	var param_b = query[1];
-	var param_c = query[2];
-	console.log("query", query);
+	var questionID = query[0];
+	var questionType = query[1];
+	var startEnd = query[2];
+	console.log("questionID:", questionID, " questionType:",questionType,  " Start/End/None:", startEnd);
 
-	console.log("test click");
-	var currentQ = "%Q_NUMBER%";
-	var ans = "%Q1,result%";
-	var que = "%Q1,text%";
+	var currentQ = %Q_NUMBER%;
+	var ans = %Q1,result%;
+	var que = %Q1,text%;
 	console.log("test click", currentQ, ans, que);
 
 	// 	var question = %Q%Q_NUMBER%,text%;
@@ -189,3 +187,4 @@ initButtonListener();
 console.log("test)
 </script> */
 }
+
