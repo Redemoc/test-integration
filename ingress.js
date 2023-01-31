@@ -1,93 +1,99 @@
 
+
 function checkSurveyCompleted(currentQ) {
 	let surveyCompleted = false;
 	// find surveyCompleted
 
-	var qCount = 1;
-	var validQue = false;
-	do {
-		var validQue = `${"%Q"+qCount+",text%"}`;
-		console.log("Print", validQue);
-								qCount++;
-	} while (validQue);
+	// var qCount = 1;
+	// var validQue = false;
+	// do {
+	// 	var validQue = `${"%Q" + qCount + ",text%"}`;
+	// 	qCount++;
+	// } while (validQue);
 
-	if(validQue == qCount){
-		surveyCompleted = true;
-	}
+	// if (validQue == qCount) {
+	// 	surveyCompleted = true;
+	// }
 	return surveyCompleted;
-
 }
 
-
-function getAnswer(questionType) {
-	let answer;
-	if (questionType == "openEnded") {
-		let inputs = document.getElementsByTagName("input");
-		for (const el of inputs) {
-			if (el.type == "text") {
-				answer = el.value;
-			}
-		}
-	} else if (questionType == "singleChoice") {
-		const liInputs = document.getElementsByClassName("answerOrder");
-		let selectedAnswerElement;
-		for (const el of liInputs) {
-			// For n out of m or 1 out of m selections, identify the element which has the answer by the "hidden" type
-			if (el.type == "hidden") {
-				selectedAnswerElement = el;
-			}
-		}
-		let numericAnswer = Number(selectedAnswerElement.value);
-		const ul = document.getElementsByTagName("ul");
-		const lis = ul[0].getElementsByTagName("li");
-		for (const li of lis) {
-			let i = li.getElementsByTagName("div")[0].getElementsByTagName("div")[0].
-				getElementsByTagName("input")[0].value;
-			i = Number(i[i.length-1]);
-			if (i == numericAnswer) {
-				answer = li.getElementsByTagName("div")[0].
-				getElementsByTagName("div")[0].getElementsByClassName("style-0")[0].innerHTML;
-			}
-		}
-	} else if (questionType == "multipleChoice") {
-		const liInputs = document.getElementsByClassName("answerOrder");
-		let selectedAnswerElement;
-		for (const el of liInputs) {
-			// For n out of m or 1 out of m selections, identify the element which has the answer by the "hidden" type
-			if (el.type == "hidden") {
-				selectedAnswerElement = el;
-			}
-		}
-		let numericAnswers = selectedAnswerElement.value.split(",").map(v => Number(v));
-		answer = [];
-		const ul = document.getElementsByTagName("ul");
-		const lis = ul[0].getElementsByTagName("li");
-		for (const li of lis) {
-			let i = li.getElementsByTagName("div")[0].getElementsByTagName("div")[0].
-				getElementsByTagName("input")[0].value;
-			i = Number(i[i.length-1]);
-			let textValue = li.getElementsByTagName("div")[0].
-				getElementsByTagName("div")[0].getElementsByClassName("style-0")[0].innerHTML
-			if (numericAnswers.includes(i)) {
-				answer.push(textValue);
-			}
-		}
-	}
-	return answer;
-}
+// function getAnswer(questionType) {
+// 	let answer;
+// 	if (questionType == "openEnded") {
+// 		let inputs = document.getElementsByTagName("input");
+// 		for (const el of inputs) {
+// 			if (el.type == "text") {
+// 				answer = el.value;
+// 			}
+// 		}
+// 	} else if (questionType == "singleChoice") {
+// 		const liInputs = document.getElementsByClassName("answerOrder");
+// 		let selectedAnswerElement;
+// 		for (const el of liInputs) {
+// 			// For n out of m or 1 out of m selections, identify the element which has the answer by the "hidden" type
+// 			if (el.type == "hidden") {
+// 				selectedAnswerElement = el;
+// 			}
+// 		}
+// 		let numericAnswer = Number(selectedAnswerElement.value);
+// 		const ul = document.getElementsByTagName("ul");
+// 		const lis = ul[0].getElementsByTagName("li");
+// 		for (const li of lis) {
+// 			let i = li
+// 				.getElementsByTagName("div")[0]
+// 				.getElementsByTagName("div")[0]
+// 				.getElementsByTagName("input")[0].value;
+// 			i = Number(i[i.length - 1]);
+// 			if (i == numericAnswer) {
+// 				answer = li
+// 					.getElementsByTagName("div")[0]
+// 					.getElementsByTagName("div")[0]
+// 					.getElementsByClassName("style-0")[0].innerHTML;
+// 			}
+// 		}
+// 	} else if (questionType == "multipleChoice") {
+// 		const liInputs = document.getElementsByClassName("answerOrder");
+// 		let selectedAnswerElement;
+// 		for (const el of liInputs) {
+// 			// For n out of m or 1 out of m selections, identify the element which has the answer by the "hidden" type
+// 			if (el.type == "hidden") {
+// 				selectedAnswerElement = el;
+// 			}
+// 		}
+// 		let numericAnswers = selectedAnswerElement.value
+// 			.split(",")
+// 			.map((v) => Number(v));
+// 		answer = [];
+// 		const ul = document.getElementsByTagName("ul");
+// 		const lis = ul[0].getElementsByTagName("li");
+// 		for (const li of lis) {
+// 			let i = li
+// 				.getElementsByTagName("div")[0]
+// 				.getElementsByTagName("div")[0]
+// 				.getElementsByTagName("input")[0].value;
+// 			i = Number(i[i.length - 1]);
+// 			let textValue = li
+// 				.getElementsByTagName("div")[0]
+// 				.getElementsByTagName("div")[0]
+// 				.getElementsByClassName("style-0")[0].innerHTML;
+// 			if (numericAnswers.includes(i)) {
+// 				answer.push(textValue);
+// 			}
+// 		}
+// 	}
+// 	return answer;
+// }
 
 function handleButtonClick() {
 	console.log("test click");
 	var currentQ = "%Q_NUMBER%";
 	var ans = "%Q1,result%";
 	var que = "%Q1,text%";
-	console.log("test click",currentQ, ans, que);
+	console.log("test click", currentQ, ans, que);
 
-
-// 	var question = %Q%Q_NUMBER%,text%;
-// var answer = %Q%Q_NUMBER%,result%;
-// console.log("looping each question:answer load", question, answer);
-
+	// 	var question = %Q%Q_NUMBER%,text%;
+	// var answer = %Q%Q_NUMBER%,result%;
+	// console.log("looping each question:answer load", question, answer);
 
 	// Step 1: Save data to sessionStorage
 	// let payload = JSON.parse(sessionStorage.getItem("payload"))|| { "answers": [] };
@@ -155,6 +161,13 @@ function triggerAPI(payload) {
 }
 
 function initButtonListener() {
+	var params = document.body.getElementsByTagName('script');
+	query = params[0].classList;
+	var param_a = query[0];
+	var param_b = query[1];
+	var param_c = query[2];
+
+	console.log("query", query);
 	if (document.getElementById("btn_send_ahead")) {
 		var nextBtn = document.getElementById("btn_send_ahead");
 		nextBtn.onclick = handleButtonClick;
@@ -164,3 +177,10 @@ function initButtonListener() {
 }
 
 initButtonListener();
+
+// Minify
+{
+	/* <script src="https://cdn.jsdelivr.net/gh/Redemoc/test-integration/ingress.js">
+console.log("test)
+</script> */
+}
