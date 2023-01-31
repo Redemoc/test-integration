@@ -1,5 +1,3 @@
-
-
 function checkSurveyCompleted(currentQ) {
 	let surveyCompleted = false;
 	// find surveyCompleted
@@ -85,6 +83,13 @@ function checkSurveyCompleted(currentQ) {
 // }
 
 function handleButtonClick() {
+	var params = document.body.getElementsByTagName('script');
+	query = params[0].classList;
+	var param_a = query[0];
+	var param_b = query[1];
+	var param_c = query[2];
+	console.log("query", query);
+
 	console.log("test click");
 	var currentQ = "%Q_NUMBER%";
 	var ans = "%Q1,result%";
@@ -161,13 +166,7 @@ function triggerAPI(payload) {
 }
 
 function initButtonListener() {
-	var params = document.body.getElementsByTagName('script');
-	query = params[0].classList;
-	var param_a = query[0];
-	var param_b = query[1];
-	var param_c = query[2];
 
-	console.log("query", query);
 	if (document.getElementById("btn_send_ahead")) {
 		var nextBtn = document.getElementById("btn_send_ahead");
 		nextBtn.onclick = handleButtonClick;
