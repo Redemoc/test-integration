@@ -1,3 +1,9 @@
+const MAGIC_KEY =
+	"";
+const INTEGRATION_KEY = "";
+const SURVEY_ID = "";
+
+
 function checkSurveyCompleted(currentQ) {
 	let surveyCompleted = false;
 	// find surveyCompleted
