@@ -1,153 +1,160 @@
-const MAGIC_KEY =
-	"";
-const INTEGRATION_KEY = "";
-const SURVEY_ID = "";
 
-function checkSurveyCompleted(currentQ) {
+// Redem Variables
+let global_answer;
+const qNumber = "%Q_NUMBER%";
+
+
+// Customer inputs
+	var params = document.body.getElementsByTagName('script');
+	query = params[0].classList;
+	var questionID = query[3];
+	var questionType = query[0];
+	var position = query[1];
+	var hashed_magic_key = query[2];
+	console.log("hashed_magic_key:", hashed_magic_key, " questionType:",questionType,  " Start/End/None:", position);
+
+// Code
+function checkSurveyCompleted() {
 	let surveyCompleted = false;
 	// find surveyCompleted
-
-	// var qCount = 1;
-	// var validQue = false;
-	// do {
-	// 	var validQue = `${"%Q" + qCount + ",text%"}`;
-	// 	qCount++;
-	// } while (validQue);
-
-	// if (validQue == qCount) {
-	// 	surveyCompleted = true;
-	// }
+	if (position == "END") {
+		surveyCompleted = true;
+	}
 	return surveyCompleted;
 }
 
-// function getAnswer(questionType) {
-// 	let answer;
-// 	if (questionType == "openEnded") {
-// 		let inputs = document.getElementsByTagName("input");
-// 		for (const el of inputs) {
-// 			if (el.type == "text") {
-// 				answer = el.value;
-// 			}
-// 		}
-// 	} else if (questionType == "singleChoice") {
-// 		const liInputs = document.getElementsByClassName("answerOrder");
-// 		let selectedAnswerElement;
-// 		for (const el of liInputs) {
-// 			// For n out of m or 1 out of m selections, identify the element which has the answer by the "hidden" type
-// 			if (el.type == "hidden") {
-// 				selectedAnswerElement = el;
-// 			}
-// 		}
-// 		let numericAnswer = Number(selectedAnswerElement.value);
-// 		const ul = document.getElementsByTagName("ul");
-// 		const lis = ul[0].getElementsByTagName("li");
-// 		for (const li of lis) {
-// 			let i = li
-// 				.getElementsByTagName("div")[0]
-// 				.getElementsByTagName("div")[0]
-// 				.getElementsByTagName("input")[0].value;
-// 			i = Number(i[i.length - 1]);
-// 			if (i == numericAnswer) {
-// 				answer = li
-// 					.getElementsByTagName("div")[0]
-// 					.getElementsByTagName("div")[0]
-// 					.getElementsByClassName("style-0")[0].innerHTML;
-// 			}
-// 		}
-// 	} else if (questionType == "multipleChoice") {
-// 		const liInputs = document.getElementsByClassName("answerOrder");
-// 		let selectedAnswerElement;
-// 		for (const el of liInputs) {
-// 			// For n out of m or 1 out of m selections, identify the element which has the answer by the "hidden" type
-// 			if (el.type == "hidden") {
-// 				selectedAnswerElement = el;
-// 			}
-// 		}
-// 		let numericAnswers = selectedAnswerElement.value
-// 			.split(",")
-// 			.map((v) => Number(v));
-// 		answer = [];
-// 		const ul = document.getElementsByTagName("ul");
-// 		const lis = ul[0].getElementsByTagName("li");
-// 		for (const li of lis) {
-// 			let i = li
-// 				.getElementsByTagName("div")[0]
-// 				.getElementsByTagName("div")[0]
-// 				.getElementsByTagName("input")[0].value;
-// 			i = Number(i[i.length - 1]);
-// 			let textValue = li
-// 				.getElementsByTagName("div")[0]
-// 				.getElementsByTagName("div")[0]
-// 				.getElementsByClassName("style-0")[0].innerHTML;
-// 			if (numericAnswers.includes(i)) {
-// 				answer.push(textValue);
-// 			}
-// 		}
-// 	}
-// 	return answer;
-// }
+function getAnswer(questionType) {
+	let answer;
+	if (questionType == "OES") {
+		var input = document.querySelector("input[id^=Q" + qNumber + "A]");
+
+		if (input.type == "text") {
+			answer = input.value;
+		}
+	}
+
+	// } else if (questionType == "singleChoice") {
+	// 	const liInputs = document.getElementsByClassName("answerOrder");
+	// 	let selectedAnswerElement;
+	// 	for (const el of liInputs) {
+	// 		// For n out of m or 1 out of m selections, identify the element which has the answer by the "hidden" type
+	// 		if (el.type == "hidden") {
+	// 			selectedAnswerElement = el;
+	// 		}
+	// 	}
+	// 	let numericAnswer = Number(selectedAnswerElement.value);
+	// 	const ul = document.getElementsByTagName("ul");
+	// 	const lis = ul[0].getElementsByTagName("li");
+	// 	for (const li of lis) {
+	// 		let i = li
+	// 			.getElementsByTagName("div")[0]
+	// 			.getElementsByTagName("div")[0]
+	// 			.getElementsByTagName("input")[0].value;
+	// 		i = Number(i[i.length - 1]);
+	// 		if (i == numericAnswer) {
+	// 			answer = li
+	// 				.getElementsByTagName("div")[0]
+	// 				.getElementsByTagName("div")[0]
+	// 				.getElementsByClassName("style-0")[0].innerHTML;
+	// 		}
+	// 	}
+	// } else if (questionType == "multipleChoice") {
+	// 	const liInputs = document.getElementsByClassName("answerOrder");
+	// 	let selectedAnswerElement;
+	// 	for (const el of liInputs) {
+	// 		// For n out of m or 1 out of m selections, identify the element which has the answer by the "hidden" type
+	// 		if (el.type == "hidden") {
+	// 			selectedAnswerElement = el;
+	// 		}
+	// 	}
+	// 	let numericAnswers = selectedAnswerElement.value
+	// 		.split(",")
+	// 		.map((v) => Number(v));
+	// 	answer = [];
+	// 	const ul = document.getElementsByTagName("ul");
+	// 	const lis = ul[0].getElementsByTagName("li");
+	// 	for (const li of lis) {
+	// 		let i = li
+	// 			.getElementsByTagName("div")[0]
+	// 			.getElementsByTagName("div")[0]
+	// 			.getElementsByTagName("input")[0].value;
+	// 		i = Number(i[i.length - 1]);
+	// 		let textValue = li
+	// 			.getElementsByTagName("div")[0]
+	// 			.getElementsByTagName("div")[0]
+	// 			.getElementsByClassName("style-0")[0].innerHTML;
+	// 		if (numericAnswers.includes(i)) {
+	// 			answer.push(textValue);
+	// 		}
+	// 	}
+	// }
+
+	return answer;
+}
 
 function handleButtonClick() {
-	var params = document.body.getElementsByTagName('script');
-	query = params[0].classList;
-	var questionID = query[0];
-	var questionType = query[1];
-	var startEnd = query[2];
-	console.log("questionID:", questionID, " questionType:",questionType,  " Start/End/None:", startEnd);
-
-	var currentQ = %Q_NUMBER%;
-	var ans = %Q1,result%;
-	var que = %Q1,text%;
-	console.log("test click", currentQ, ans, que);
-
-	// 	var question = %Q%Q_NUMBER%,text%;
-	// var answer = %Q%Q_NUMBER%,result%;
-	// console.log("looping each question:answer load", question, answer);
 
 	// Step 1: Save data to sessionStorage
-	// let payload = JSON.parse(sessionStorage.getItem("payload"))|| { "answers": [] };
-	// payload["answers"].push(global_answer);
-	// sessionStorage.setItem("payload",JSON.stringify(payload));
+	global_answer = getAnswer(questionType);
+	console.log(
+		"test click",
+		global_answer,
+		qNumber,
+		questionType
+	);
+
+	let payload = JSON.parse(sessionStorage.getItem("payload")) || {
+		answers: [],
+	};
+	payload["answers"].push(global_answer);
+	sessionStorage.setItem("payload", JSON.stringify(payload));
 
 	// Step 2: Trigger API
-	const surveyCompleted = checkSurveyCompleted(currentQ);
+	const surveyCompleted = checkSurveyCompleted();
 	if (surveyCompleted) {
 		alert("The survey is complete. Sending payload to Redem API now ...");
 		triggerAPI(payload);
 	}
 }
 
-function triggerAPI(payload) {
-	// TODO 1 format global_answer and add to body
+function handleIncludeExclude(response) {
+	console.log(
+		"get api response and set to the input/screenout logic",
+		response
+	);
+}
 
-	fetch("http://localhost:8000/respondent/create", {
+function initButtonListener() {
+	if (document.getElementById("btn_send_ahead")) {
+		var nextBtn = document.getElementById("btn_send_ahead");
+		nextBtn.onclick = handleButtonClick;
+	} else {
+		window.setTimeout("initButtonListener()", 10);
+	}
+}
+
+function triggerAPI(payload) {
+	fetch("http://127.0.0.1:8000/live-respondent/create", {
 		method: "POST",
+		mode: 'cors',
 		body: JSON.stringify({
 			respondentID: `${new Date().getTime()}`,
-			surveyID: SURVEY_ID,
+			hashed_magic_key: hashed_magic_key,
 			datapoints: [
 				{
-					dataPointIdentifier: "DP1",
-					timeStamp: 10,
+					dataPointIdentifier: "Timestamp 1",
+					timeStamp: 4800,
 				},
 				{
-					dataPointIdentifier: "DP2",
-					itemBattery: [6, 1, 2, 3, 4, 5, 1, 1, 1, 1],
-					numberOfItems: 10,
-				},
-				{
-					dataPointIdentifier: "DP3",
-					openEndedAnswer: "antwort 2",
-				},
+					dataPointIdentifier: "OE 1",
+					openEndedAnswer: "antwort 1",
+				}
 			],
 		}),
+		referrer: "origin",
 		headers: {
-			magic_key: MAGIC_KEY,
-			api_key: INTEGRATION_KEY,
-			Accept: "application/json",
-			"Content-Type": "application/json",
+			'Content-Type': 'application/json',
 		},
-		referrer: "no-referrer",
 	})
 		.then(function (response) {
 			// The API call was successful!
@@ -160,31 +167,14 @@ function triggerAPI(payload) {
 		.then(function (data) {
 			// This is the JSON from our response
 			console.warn("Successfull!", data);
-			alert(JSON.stringify(data));
+			handleIncludeExclude(data);
+			alert("Success:" + JSON.stringify(data));
 		})
 		.catch(function (err) {
 			// There was an error
-			console.warn("Something went wrong.", err);
-			alert(err.message);
+			console.warn("Something went wrong ->", err);
+			alert("error:" + err.message);
 		});
 }
 
-function initButtonListener() {
-
-	if (document.getElementById("btn_send_ahead")) {
-		var nextBtn = document.getElementById("btn_send_ahead");
-		nextBtn.onclick = handleButtonClick;
-	} else {
-		window.setTimeout("initButtonListener()", 10);
-	}
-}
-
 initButtonListener();
-
-// Minify
-{
-	/* <script src="https://cdn.jsdelivr.net/gh/Redemoc/test-integration/ingress.js">
-console.log("test)
-</script> */
-}
-
