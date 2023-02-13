@@ -1,17 +1,17 @@
 
 // Redem Variables
 let global_answer;
-const qNumber = "%Q_NUMBER%";
+// const qNumber = "%Q_NUMBER%";
 
 
 // Customer inputs
-	var params = document.body.getElementsByTagName('script');
+	const params = document.body.getElementsByTagName('script');
 	query = params[0].classList;
-	var questionID = query[3];
-	var questionType = query[0];
-	var position = query[1];
-	var hashed_magic_key = query[2];
-	console.log("hashed_magic_key:", hashed_magic_key, " questionType:",questionType,  " Start/End/None:", position);
+	const questionID = query[1];
+	const questionType = query[0];
+	const position = query[2];
+	const hashed_magic_key = query[3];
+	console.log("hashed_magic_key:", hashed_magic_key, " questionType:",questionType,  " Start/End/None:", position, " questionID:", questionID);
 
 // Code
 function checkSurveyCompleted() {
@@ -26,7 +26,7 @@ function checkSurveyCompleted() {
 function getAnswer(questionType) {
 	let answer;
 	if (questionType == "OES") {
-		var input = document.querySelector("input[id^=Q" + qNumber + "A]");
+		const input = document.querySelector("input[id^=Q" + questionID + "A]");
 
 		if (input.type == "text") {
 			answer = input.value;
@@ -99,7 +99,7 @@ function handleButtonClick() {
 	console.log(
 		"test click",
 		global_answer,
-		qNumber,
+		questionID,
 		questionType
 	);
 
