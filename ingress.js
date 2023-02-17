@@ -1,17 +1,35 @@
+// Temp Variables
+// const position = "END";
+// const questionType = "OES";
+// // const hashed_magic_key = "63eebbc8050b168afde8f69563ef8f"; //staging
+// const hashed_magic_key = "63e4e6006dc2418d9c40f39c5848c"; //dev
+// const questionID = "%Q_NUMBER%";
+
 
 // Redem Variables
+const BASE_URL = "http://127.0.0.1:8000";
+// https://staging.live-api.redem.io
+let SESSION_STORAGE_HELPERS = {};
 let global_answer;
-// const qNumber = "%Q_NUMBER%";
-
 
 // Customer inputs
-	const params = document.body.getElementsByTagName('script');
-	query = params[0].classList;
-	const questionID = query[1];
-	const questionType = query[0];
-	const position = query[2];
-	const hashed_magic_key = query[3];
-	console.log("hashed_magic_key:", hashed_magic_key, " questionType:",questionType,  " Start/End/None:", position, " questionID:", questionID);
+const params = document.body.getElementsByTagName("script");
+query = params[0].classList;
+const questionType = query[0];
+const questionID = query[1];
+const position = query[2];
+const hashed_magic_key = query[3];
+
+console.log(
+	"hashed_magic_key:",
+	hashed_magic_key,
+	" questionType:",
+	questionType,
+	" Start/End/None:",
+	position,
+	" questionID:",
+	questionID
+);
 
 // Code
 function checkSurveyCompleted() {
@@ -93,28 +111,44 @@ function getAnswer(questionType) {
 }
 
 function handleButtonClick() {
-
-	// Step 1: Save data to sessionStorage
+	// Step 1: Get answer and store in global variable
 	global_answer = getAnswer(questionType);
-	console.log(
-		"test click",
-		global_answer,
-		questionID,
-		questionType
-	);
 
+	// Step 2: Get existing data from session storage
 	let payload = JSON.parse(sessionStorage.getItem("payload")) || {
-		answers: [],
+		open_answers: {},
+		item_batteries: {},
+		timestamps: {},
 	};
-	payload["answers"].push(global_answer);
-	sessionStorage.setItem("payload", JSON.stringify(payload));
 
-	// Step 2: Trigger API
+	if (questionType === "OES") {
+		payload["open_answers"][questionID] = global_answer;
+		// } else if (questionType === "IBS") {
+		// 	// global answer is already an array of items here
+		// 	payload["item_batteries"][questionID] = global_answer;
+		// } else if (questionType === "TS") {
+		// 	let oldDeltaT = 0;
+		// 	if (Object.keys(payload["timestamps"]).includes(questionID)) {
+		// 		oldDeltaT = payload["timestamps"][questionID];
+		// 	}
+		// 	let deltaT = Date.now() - startTime;
+		// 	payload["timestamps"][questionID] = oldDeltaT + deltaT;
+	}
+	let redemScore;
+
+	// Step 3: Trigger API
 	const surveyCompleted = checkSurveyCompleted();
 	if (surveyCompleted) {
 		alert("The survey is complete. Sending payload to Redem API now ...");
-		triggerAPI(payload);
+		redemScore = triggerAPI(payload);
 	}
+
+	// Step 4: Set session storage items
+	sessionStorage.setItem(
+		"sessionStorage",
+		JSON.stringify(SESSION_STORAGE_HELPERS)
+	);
+	sessionStorage.setItem("payload", JSON.stringify(payload));
 }
 
 function handleIncludeExclude(response) {
@@ -133,27 +167,55 @@ function initButtonListener() {
 	}
 }
 
-function triggerAPI(payload) {
-	fetch("http://127.0.0.1:8000/live-respondent/create", {
+function setRedemScoreToAnswer(redemScore) {
+	let inputs = document.getElementsByTagName("input");
+	for (const el of inputs) {
+		if (el.type == "number") {
+			el.value = redemScore;
+			el.click();
+		}
+	}
+}
+
+async function triggerAPI(payload) {
+	const datapoints = [];
+	for (let i = 0; i < Object.keys(payload["open_answers"]).length; i++) {
+		let questionID = Object.keys(payload["open_answers"])[i];
+		datapoints.push({
+			dataPointIdentifier: questionID,
+			openEndedAnswer: payload["open_answers"][questionID],
+		});
+	}
+	// for (let i = 0; i < Object.keys(payload["item_batteries"]).length; i++) {
+	// 	let questionID = Object.keys(payload["item_batteries"])[i];
+	// 	datapoints.push({
+	// 		dataPointIdentifier: questionID,
+	// 		itemBattery: payload["item_batteries"][questionID],
+	// 		numberOfItems: payload["item_batteries"][questionID].length,
+	// 	});
+	// }
+	// for (let i = 0; i < Object.keys(payload["timestamps"]).length; i++) {
+	// 	let questionID = Object.keys(payload["timestamps"])[i];
+	// 	datapoints.push({
+	// 		dataPointIdentifier: questionID,
+	// 		timeStamp: payload["timestamps"][questionID],
+	// 	});
+
+	let redemScore = -998;
+
+	fetch(`${BASE_URL}/live-respondent/create`, {
 		method: "POST",
-		mode: 'cors',
+		mode: "cors",
 		body: JSON.stringify({
 			respondentID: `${new Date().getTime()}`,
-			hashed_magic_key: hashed_magic_key,
 			datapoints: [
-				{
-					dataPointIdentifier: "Timestamp 1",
-					timeStamp: 4800,
-				},
-				{
-					dataPointIdentifier: "OE 1",
-					openEndedAnswer: "antwort 1",
-				}
+				datapoints
 			],
+			hashed_magic_key: hashed_magic_key,
 		}),
 		referrer: "origin",
 		headers: {
-			'Content-Type': 'application/json',
+			"Content-Type": "application/json",
 		},
 	})
 		.then(function (response) {
@@ -175,6 +237,27 @@ function triggerAPI(payload) {
 			console.warn("Something went wrong ->", err);
 			alert("error:" + err.message);
 		});
+
+	// 	alert(data.message);
+	// 	const data = await res.json();
+	// 	redemScore = data.body.redemScore;
+	// 	alert("API call succeeded!");
+	// 	alert(data.message);
+	// } catch (error) {
+	// 	alert("API call failed");
+	// 	redemScore = -997;
+	// 	alert(error);
+	// } finally {
+	// 	alert("Redem Score in finally block: " + String(redemScore));
+	// 	return redemScore;
+	// }
 }
+
+SESSION_STORAGE_HELPERS = JSON.parse(
+	sessionStorage.getItem("sessionStorage")
+) || {
+	totalScore: -999,
+	surveyStart: false,
+};
 
 initButtonListener();
