@@ -2,6 +2,7 @@
 const BASE_URL = "http://127.0.0.1:8000";
 // https://staging.live-api.redem.io
 let SESSION_STORAGE_HELPERS = {};
+
 let global_answer;
 
 // Customer inputs
@@ -200,9 +201,7 @@ async function triggerAPI(payload) {
 		mode: "cors",
 		body: JSON.stringify({
 			respondentID: `${new Date().getTime()}`,
-			datapoints: [
-				datapoints
-			],
+			datapoints: datapoints,
 			hashed_magic_key: hashed_magic_key,
 		}),
 		referrer: "origin",
