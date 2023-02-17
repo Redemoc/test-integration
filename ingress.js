@@ -1,11 +1,3 @@
-// Temp Variables
-// const position = "END";
-// const questionType = "OES";
-// // const hashed_magic_key = "63eebbc8050b168afde8f69563ef8f"; //staging
-// const hashed_magic_key = "63e4e6006dc2418d9c40f39c5848c"; //dev
-// const questionID = "%Q_NUMBER%";
-
-
 // Redem Variables
 const BASE_URL = "http://127.0.0.1:8000";
 // https://staging.live-api.redem.io
