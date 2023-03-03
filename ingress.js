@@ -17,12 +17,12 @@ const SCORE_TYPES = {
 
 // Customer inputs
 var script = document.currentScript;
-var query = script.getAttribute('data-params').split(",")
+var query = script.getAttribute("data-params").split(",");
 
 const questionTypes = query.at(0) ? query.at(0).split("+") : new Array();
 const questionID = query.at(2);
-const position =  query.at(1);
-const datafile_secret_key =  query.at(3);
+const position = query.at(1);
+const datafile_secret_key = query.at(3);
 
 console.log(
 	"datafile_secret_key:",
@@ -69,11 +69,13 @@ async function handleButtonClick(startTime) {
 	global_answer = getAnswer();
 
 	// Step 2: Get existing data from session storage
-	let payload = sessionStorage.getItem("payload") ? JSON.parse(sessionStorage.getItem("payload")) : {
-		open_answers: {},
-		item_batteries: {},
-		timestamps: {},
-	};
+	let payload = sessionStorage.getItem("payload")
+		? JSON.parse(sessionStorage.getItem("payload"))
+		: {
+				open_answers: {},
+				item_batteries: {},
+				timestamps: {},
+		  };
 
 	if (questionTypes.includes(SCORE_TYPES.OES)) {
 		payload["open_answers"][questionID] = global_answer;
@@ -155,7 +157,7 @@ async function triggerAPI(nextBtn) {
 	for (let i = 0; i < Object.keys(payload["open_answers"]).length; i++) {
 		let questionID = Object.keys(payload["open_answers"])[i];
 		datapoints.push({
-			dataPointIdentifier: "Q" + (i + 1) + "_OES",
+			dataPointIdentifier: "OES_Q" + (i + 1),
 			openEndedAnswer: payload["open_answers"][questionID],
 		});
 	}
@@ -163,7 +165,7 @@ async function triggerAPI(nextBtn) {
 	for (let i = 0; i < Object.keys(payload["item_batteries"]).length; i++) {
 		let questionID = Object.keys(payload["item_batteries"])[i];
 		datapoints.push({
-			dataPointIdentifier: "Q" + (i + 1) + "_IBS",
+			dataPointIdentifier: "IBS_Q" + (i + 1),
 			itemBattery: payload["item_batteries"][questionID],
 			numberOfItems: payload["item_batteries"][questionID].length,
 		});
@@ -172,7 +174,7 @@ async function triggerAPI(nextBtn) {
 	for (let i = 0; i < Object.keys(payload["timestamps"]).length; i++) {
 		let questionID = Object.keys(payload["timestamps"])[i];
 		datapoints.push({
-			dataPointIdentifier: "Q" + (i + 1) + "_TS",
+			dataPointIdentifier: "TS_Q" + (i + 1),
 			timeStamp: payload["timestamps"][questionID],
 		});
 	}
@@ -229,12 +231,12 @@ function clearSessionStorage() {
 	console.log("Clear Here");
 }
 
-SESSION_STORAGE_HELPERS = sessionStorage.getItem("sessionStorage") ? JSON.parse(
-	sessionStorage.getItem("sessionStorage")
-) : {
-	totalScore: -999,
-	surveyStart: false,
-	surveyCompleted: false,
-};
+SESSION_STORAGE_HELPERS = sessionStorage.getItem("sessionStorage")
+	? JSON.parse(sessionStorage.getItem("sessionStorage"))
+	: {
+			totalScore: -999,
+			surveyStart: false,
+			surveyCompleted: false,
+	  };
 
 initButtonListener();
