@@ -1,8 +1,10 @@
 // info "|"" and "[0]" doesnt work on ingress inside of a script inside table
+
 const TRACK_SURVEY_DURATION = true;
 
 // Redem Variables
 const BASE_URL = "http://localhost:8000";
+// https://staging.live-api.redem.io
 let SESSION_STORAGE_HELPERS = {};
 let redemScore = -998;
 let nextBtn = null;
@@ -15,11 +17,11 @@ const SCORE_TYPES = {
 
 // Customer inputs
 var script = document.currentScript;
-var query = script.getAttribute('data-params').split(" ")
+var query = script.getAttribute('data-params').split(",")
 
 const questionTypes = query.at(0) ? query.at(0).split("+") : new Array();
-const questionID = query.at(1);
-const position =  query.at(2);
+const questionID = query.at(2);
+const position =  query.at(1);
 const datafile_secret_key =  query.at(3);
 
 console.log(
@@ -184,7 +186,7 @@ async function triggerAPI(nextBtn) {
 			: undefined;
 		// alert("The survey is complete. Total duration: "+String(totalSurveyDuration));
 		datapoints.push({
-			dataPointIdentifier: "Total_TS",
+			dataPointIdentifier: "TOTAL_TS",
 			timeStamp: totalSurveyDuration,
 		});
 	}
@@ -211,7 +213,7 @@ async function triggerAPI(nextBtn) {
 				? data.body.redemScore
 				: -997;
 	} catch (error) {
-		alert("API call failed");
+		// alert("API call failed");
 		// alert(error);
 		redemScore = -997;
 	} finally {
