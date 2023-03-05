@@ -1,11 +1,11 @@
 // info "|"" and "[0]" doesnt work on ingress inside of a script inside table
-
-const TRACK_SURVEY_DURATION = true;
+// use [] in the root level as much as possible
 
 // Redem Variables
 const BASE_URL = "http://localhost:8000";
 // https://staging.live-api.redem.io
 let SESSION_STORAGE_HELPERS = {};
+
 let redemScore = -998;
 let nextBtn = null;
 let global_answer = null;
@@ -39,22 +39,24 @@ console.log(
 function checkSurveyCompleted() {
 	let surveyCompleted = false;
 	// find surveyCompleted
-	if (position == "END") {
+	if (position.toLowerCase() == "end") {
 		surveyCompleted = true;
 	}
+
 	return surveyCompleted;
 }
+
 
 function getAnswer() {
 	let answer;
 	if (questionTypes.includes(SCORE_TYPES.OES)) {
-		const input = document.querySelector("input[id^=Q" + questionID + "A]");
+		const input = document.querySelector("input[id^=" + questionID + "A]");
 		if (input.type == "text") {
 			answer = input.value;
 		}
 	} else if (questionTypes.includes(SCORE_TYPES.IBS)) {
 		answer = [];
-		const inputs = document.querySelectorAll("input[id^=Q" + questionID + "A]");
+		const inputs = document.querySelectorAll("input[id^=" + questionID + "A]");
 		for (const input of inputs) {
 			if (input.type == "radio" && input.checked) {
 				answer.push(input.value);
@@ -103,15 +105,16 @@ async function handleButtonClick(startTime) {
 async function initButtonListener() {
 	if (document.getElementById("btn_send_ahead")) {
 		nextBtn = document.getElementById("btn_send_ahead");
+
 		const surveyCompleted = checkSurveyCompleted();
 		if (surveyCompleted) {
 			//step 1: setup the layout for API call
 			nextBtn.style.display = "none";
-			const input = document.querySelector("input[id^=Q" + questionID + "A1]");
+			const input = document.querySelector("input[id^=" + questionID + "A1]");
 			input.style.display = "none";
 
 			// Step 2: Trigger API
-			redemScore = await triggerAPI(nextBtn);
+			redemScore = await triggerAPI();
 		} else {
 			//Step 1: track timestamp when question loads
 			let startTime;
@@ -119,19 +122,25 @@ async function initButtonListener() {
 				startTime = Date.now();
 			}
 
+			if (position.toLowerCase() == "start") {
+				SESSION_STORAGE_HELPERS["trackSurveyDuration"] = true;
+			}
+
 			// Step 2: track survey duration needed then add a timestamp when question loads
-			if (!SESSION_STORAGE_HELPERS["surveyStart"] && TRACK_SURVEY_DURATION) {
-				SESSION_STORAGE_HELPERS["surveyStart"] = Date.now();
-				sessionStorage.setItem(
-					"sessionStorage",
-					JSON.stringify(SESSION_STORAGE_HELPERS)
-				);
+			if (!SESSION_STORAGE_HELPERS["surveyStart"] && SESSION_STORAGE_HELPERS["trackSurveyDuration"]) {
+				SESSION_STORAGE_HELPERS.surveyStart = Date.now();
 			}
 
 			// Step 3: add listener
 			nextBtn.addEventListener("click", async () => {
 				await handleButtonClick(startTime);
 			});
+
+			// Step 4: update the local storage
+			sessionStorage.setItem(
+				"sessionStorage",
+				JSON.stringify(SESSION_STORAGE_HELPERS)
+			);
 		}
 	} else {
 		window.setTimeout("initButtonListener()", 10);
@@ -139,7 +148,7 @@ async function initButtonListener() {
 }
 
 function setRedemScoreToAnswer(redemScore) {
-	const input = document.querySelector("input[id^=Q" + questionID + "A1]");
+	const input = document.querySelector("input[id^=" + questionID + "A1]");
 	input.value = redemScore;
 	input.click();
 
@@ -148,7 +157,7 @@ function setRedemScoreToAnswer(redemScore) {
 	nextBtn.click();
 }
 
-async function triggerAPI(nextBtn) {
+async function triggerAPI() {
 	// Step 1: get payload from storage
 	let payload = JSON.parse(sessionStorage.getItem("payload"));
 
@@ -157,7 +166,7 @@ async function triggerAPI(nextBtn) {
 	for (let i = 0; i < Object.keys(payload["open_answers"]).length; i++) {
 		let questionID = Object.keys(payload["open_answers"])[i];
 		datapoints.push({
-			dataPointIdentifier: "OES_Q" + (i + 1),
+			dataPointIdentifier: "OES_" + questionID,
 			openEndedAnswer: payload["open_answers"][questionID],
 		});
 	}
@@ -165,7 +174,7 @@ async function triggerAPI(nextBtn) {
 	for (let i = 0; i < Object.keys(payload["item_batteries"]).length; i++) {
 		let questionID = Object.keys(payload["item_batteries"])[i];
 		datapoints.push({
-			dataPointIdentifier: "IBS_Q" + (i + 1),
+			dataPointIdentifier: "IBS_" + questionID,
 			itemBattery: payload["item_batteries"][questionID],
 			numberOfItems: payload["item_batteries"][questionID].length,
 		});
@@ -174,13 +183,13 @@ async function triggerAPI(nextBtn) {
 	for (let i = 0; i < Object.keys(payload["timestamps"]).length; i++) {
 		let questionID = Object.keys(payload["timestamps"])[i];
 		datapoints.push({
-			dataPointIdentifier: "TS_Q" + (i + 1),
+			dataPointIdentifier: "TS_" + questionID,
 			timeStamp: payload["timestamps"][questionID],
 		});
 	}
 
 	// Step 3: If total duration is enabled add it as a seperate datapoint
-	if (TRACK_SURVEY_DURATION) {
+	if (SESSION_STORAGE_HELPERS["trackSurveyDuration"]) {
 		SESSION_STORAGE_HELPERS["surveyCompleted"] = Date.now();
 		const totalSurveyDuration = SESSION_STORAGE_HELPERS["surveyStart"]
 			? SESSION_STORAGE_HELPERS["surveyCompleted"] -
@@ -215,7 +224,7 @@ async function triggerAPI(nextBtn) {
 				? data.body.redemScore
 				: -997;
 	} catch (error) {
-		// alert("API call failed");
+		alert("API call failed");
 		// alert(error);
 		redemScore = -997;
 	} finally {
@@ -228,7 +237,13 @@ async function triggerAPI(nextBtn) {
 }
 
 function clearSessionStorage() {
-	console.log("Clear Here");
+	// TODO: uncomment when done with the testing
+	// sessionStorage.removeItem(
+	// 	"sessionStorage"
+	// );
+	// sessionStorage.removeItem(
+	// 	"payload"
+	// );
 }
 
 SESSION_STORAGE_HELPERS = sessionStorage.getItem("sessionStorage")
@@ -237,6 +252,7 @@ SESSION_STORAGE_HELPERS = sessionStorage.getItem("sessionStorage")
 			totalScore: -999,
 			surveyStart: false,
 			surveyCompleted: false,
+			trackSurveyDuration: false
 	  };
 
 initButtonListener();
