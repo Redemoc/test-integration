@@ -8,7 +8,7 @@ let SESSION_STORAGE_HELPERS = {};
 let GLOBAL_PAYLOAD = {};
 
 let includeRespondent = true;
-const respID = "%TAN%";
+// const respID = "%TAN%";
 let nextBtn = null;
 let GLOBAL_ANSWER = null;
 const SCORE_TYPES = {
@@ -26,6 +26,7 @@ const datafile_secret_key = query.pop(); //3rd param
 const questionID = query.pop(); //2nd param
 const position = query.pop(); //1st param
 let questionTypes = query.pop();
+let respID = query.pop();
 questionTypes =="null" ? questionTypes.split("+") : new Array();
 
 // console.log(
@@ -46,7 +47,6 @@ function checkSurveyCompleted() {
 	if (position.toLowerCase() == "end") {
 		surveyCompleted = true;
 	}
-
 	return surveyCompleted;
 }
 
