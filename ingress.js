@@ -1,14 +1,14 @@
 // info "|"" and "[0]" doesnt work on ingress inside of a script inside table
 // use [] in the root level as much as possible
-
 // Redem Variables
 const BASE_URL = "http://localhost:8000";
-// https://staging.live-api.redem.io
 let SESSION_STORAGE_HELPERS = {};
+let GLOBAL_PAYLOAD = {};
 
-let redemScore = -998;
+let includeRespondent = true;
+const respID = "%TAN%";
 let nextBtn = null;
-let global_answer = null;
+let GLOBAL_ANSWER = null;
 const SCORE_TYPES = {
 	OES: "OES",
 	TS: "TS",
@@ -19,23 +19,25 @@ const SCORE_TYPES = {
 var script = document.currentScript;
 var query = script.getAttribute("data-params").split(",");
 
-const questionTypes = query.at(0) ? query.at(0).split("+") : new Array();
-const questionID = query.at(2);
-const position = query.at(1);
-const datafile_secret_key = query.at(3);
+//POP order is important from last to first
+const datafile_secret_key = query.pop(); //3rd param
+const questionID = query.pop(); //2nd param
+const position = query.pop(); //1st param
+let questionTypes = query.pop();
+questionTypes =="null" ? questionTypes.split("+") : new Array();
 
-console.log(
-	"datafile_secret_key:",
-	datafile_secret_key,
-	" questionTypes:",
-	questionTypes,
-	" Start/End/None:",
-	position,
-	" questionID:",
-	questionID
-);
+// console.log(
+// 	"datafile_secret_key:",
+// 	datafile_secret_key,
+// 	" questionTypes:",
+// 	questionTypes,
+// 	" Start/End/None:",
+// 	position,
+// 	" questionID:",
+// 	questionID
+// );
 
-// Code
+// General Functions
 function checkSurveyCompleted() {
 	let surveyCompleted = false;
 	// find surveyCompleted
@@ -46,17 +48,16 @@ function checkSurveyCompleted() {
 	return surveyCompleted;
 }
 
-
 function getAnswer() {
 	let answer;
 	if (questionTypes.includes(SCORE_TYPES.OES)) {
-		const input = document.querySelector("input[id^=" + questionID + "A]");
+		const input = document.querySelector(".answer_input_text input");
 		if (input.type == "text") {
 			answer = input.value;
 		}
 	} else if (questionTypes.includes(SCORE_TYPES.IBS)) {
-		answer = [];
-		const inputs = document.querySelectorAll("input[id^=" + questionID + "A]");
+		answer = new Array();
+		const inputs = document.querySelectorAll("input[id^=Q]");
 		for (const input of inputs) {
 			if (input.type == "radio" && input.checked) {
 				answer.push(input.value);
@@ -66,55 +67,98 @@ function getAnswer() {
 	return answer;
 }
 
-async function handleButtonClick(startTime) {
+async function handleNextButtonClick(startTime) {
 	// Step 1: Get answer and store in global variable
-	global_answer = getAnswer();
+	GLOBAL_ANSWER = getAnswer();
+	if (questionTypes.includes(SCORE_TYPES.OES)) {
+		if (!GLOBAL_PAYLOAD["open_answers"][questionID]) {
+			GLOBAL_PAYLOAD["open_answers"][questionID] = {
+				answer: GLOBAL_ANSWER,
+				copyPasted: false,
+			};
+		} else {
+			GLOBAL_PAYLOAD["open_answers"][questionID]["answer"] = GLOBAL_ANSWER;
+		}
+	} else if (questionTypes.includes(SCORE_TYPES.IBS)) {
+		GLOBAL_PAYLOAD["item_batteries"][questionID] = GLOBAL_ANSWER;
+	}
 
-	// Step 2: Get existing data from session storage
-	let payload = sessionStorage.getItem("payload")
+	if (questionTypes.includes(SCORE_TYPES.TS)) {
+		let oldDeltaT = 0;
+		if (Object.keys(GLOBAL_PAYLOAD["timestamps"]).includes(questionID)) {
+			oldDeltaT = GLOBAL_PAYLOAD["timestamps"][questionID];
+		}
+		let deltaT = Date.now() - startTime;
+		GLOBAL_PAYLOAD["timestamps"][questionID] = oldDeltaT + deltaT;
+	}
+	// Step 3: update the session storage
+	setSessionStorage();
+}
+
+async function handleBackButtonClick(startTime) {
+	if (questionTypes.includes(SCORE_TYPES.TS)) {
+		let oldDeltaT = 0;
+		if (Object.keys(GLOBAL_PAYLOAD["timestamps"]).includes(questionID)) {
+			oldDeltaT = GLOBAL_PAYLOAD["timestamps"][questionID];
+		}
+		let deltaT = Date.now() - startTime;
+		GLOBAL_PAYLOAD["timestamps"][questionID] = oldDeltaT + deltaT;
+	}
+	sessionStorage.setItem("payload",JSON.stringify(GLOBAL_PAYLOAD));
+}
+
+// Handling Session Storage
+function clearSessionStorage() {
+	sessionStorage.removeItem("sessionStorage");
+	sessionStorage.removeItem("payload");
+}
+
+function getPayloadFromSessionStorage() {
+	return sessionStorage.getItem("payload")
 		? JSON.parse(sessionStorage.getItem("payload"))
 		: {
 				open_answers: {},
 				item_batteries: {},
 				timestamps: {},
 		  };
+}
 
-	if (questionTypes.includes(SCORE_TYPES.OES)) {
-		payload["open_answers"][questionID] = global_answer;
-	} else if (questionTypes.includes(SCORE_TYPES.IBS)) {
-		payload["item_batteries"][questionID] = global_answer;
-	}
+function getSessionFromSessionStorage() {
+	return sessionStorage.getItem("sessionStorage")
+		? JSON.parse(sessionStorage.getItem("sessionStorage"))
+		: {
+				surveyStart: false,
+				surveyCompleted: false,
+				trackSurveyDuration: false,
+		  };
+}
 
-	if (questionTypes.includes(SCORE_TYPES.TS)) {
-		let oldDeltaT = 0;
-		if (Object.keys(payload["timestamps"]).includes(questionID)) {
-			oldDeltaT = payload["timestamps"][questionID];
-		}
-		let deltaT = Date.now() - startTime;
-		payload["timestamps"][questionID] = oldDeltaT + deltaT;
-	}
-
-	// Step 3: Set session storage items
+function setSessionStorage() {
 	sessionStorage.setItem(
 		"sessionStorage",
 		JSON.stringify(SESSION_STORAGE_HELPERS)
 	);
-	sessionStorage.setItem("payload", JSON.stringify(payload));
+	sessionStorage.setItem("payload", JSON.stringify(GLOBAL_PAYLOAD));
 }
 
+SESSION_STORAGE_HELPERS = getSessionFromSessionStorage();
+GLOBAL_PAYLOAD = getPayloadFromSessionStorage();
+
+// Main Function
 async function initButtonListener() {
 	if (document.getElementById("btn_send_ahead")) {
 		nextBtn = document.getElementById("btn_send_ahead");
+		backBtn = document.getElementById("btn_send_back");
 
 		const surveyCompleted = checkSurveyCompleted();
 		if (surveyCompleted) {
 			//step 1: setup the layout for API call
 			nextBtn.style.display = "none";
-			const input = document.querySelector("input[id^=" + questionID + "A1]");
+			const input = document.querySelector(".answer_input_text input");
 			input.style.display = "none";
 
 			// Step 2: Trigger API
-			redemScore = await triggerAPI();
+			await triggerAPI();
 		} else {
 			//Step 1: track timestamp when question loads
 			let startTime;
@@ -122,34 +166,61 @@ async function initButtonListener() {
 				startTime = Date.now();
 			}
 
+			if (questionTypes.includes(SCORE_TYPES.OES)) {
+				// Special code to detect copy paste
+				let inputElement;
+				let answer;
+					const input = document.querySelector(".answer_input_text input");
+				if (input.type == "text") {
+					answer = input.value;
+					inputElement = input;
+				}
+
+				function pasteHandler() {
+					GLOBAL_PAYLOAD["open_answers"][questionID] = {
+						copyPasted: true,
+						answer: answer,
+					};
+				}
+				inputElement.onpaste = pasteHandler;
+			}
+
 			if (position.toLowerCase() == "start") {
 				SESSION_STORAGE_HELPERS["trackSurveyDuration"] = true;
 			}
 
 			// Step 2: track survey duration needed then add a timestamp when question loads
-			if (!SESSION_STORAGE_HELPERS["surveyStart"] && SESSION_STORAGE_HELPERS["trackSurveyDuration"]) {
+			if (
+				!SESSION_STORAGE_HELPERS["surveyStart"] &&
+				SESSION_STORAGE_HELPERS["trackSurveyDuration"]
+			) {
 				SESSION_STORAGE_HELPERS.surveyStart = Date.now();
 			}
 
 			// Step 3: add listener
 			nextBtn.addEventListener("click", async () => {
-				await handleButtonClick(startTime);
+				await handleNextButtonClick(startTime);
 			});
 
-			// Step 4: update the local storage
-			sessionStorage.setItem(
-				"sessionStorage",
-				JSON.stringify(SESSION_STORAGE_HELPERS)
-			);
+			if(backBtn){
+				backBtn.addEventListener("click", async () => {
+					await handleBackButtonClick(startTime);
+				});
+			}
+
+			// Step 4: update the session storage
+			setSessionStorage();
 		}
 	} else {
 		window.setTimeout("initButtonListener()", 10);
 	}
 }
+initButtonListener();
 
-function setRedemScoreToAnswer(redemScore) {
-	const input = document.querySelector("input[id^=" + questionID + "A1]");
-	input.value = redemScore;
+// API related functions
+function setRespondentIncludeToAnswer(include) {
+	const input = document.querySelector(".answer_input_text input");
+	input.value = String(include);
 	input.click();
 
 	// click the button and proceed
@@ -159,32 +230,36 @@ function setRedemScoreToAnswer(redemScore) {
 
 async function triggerAPI() {
 	// Step 1: get payload from storage
-	let payload = JSON.parse(sessionStorage.getItem("payload"));
+	GLOBAL_PAYLOAD = getPayloadFromSessionStorage();
 
 	// Step 2: format data
 	const datapoints = [];
-	for (let i = 0; i < Object.keys(payload["open_answers"]).length; i++) {
-		let questionID = Object.keys(payload["open_answers"])[i];
+	for (let i = 0; i < Object.keys(GLOBAL_PAYLOAD["open_answers"]).length; i++) {
+		let questionID = Object.keys(GLOBAL_PAYLOAD["open_answers"])[i];
 		datapoints.push({
 			dataPointIdentifier: "OES_" + questionID,
-			openEndedAnswer: payload["open_answers"][questionID],
+			openEndedAnswer: GLOBAL_PAYLOAD["open_answers"][questionID]["answer"],
 		});
 	}
 
-	for (let i = 0; i < Object.keys(payload["item_batteries"]).length; i++) {
-		let questionID = Object.keys(payload["item_batteries"])[i];
+	for (
+		let i = 0;
+		i < Object.keys(GLOBAL_PAYLOAD["item_batteries"]).length;
+		i++
+	) {
+		let questionID = Object.keys(GLOBAL_PAYLOAD["item_batteries"])[i];
 		datapoints.push({
 			dataPointIdentifier: "IBS_" + questionID,
-			itemBattery: payload["item_batteries"][questionID],
-			numberOfItems: payload["item_batteries"][questionID].length,
+			itemBattery: GLOBAL_PAYLOAD["item_batteries"][questionID],
+			numberOfItems: GLOBAL_PAYLOAD["item_batteries"][questionID].length,
 		});
 	}
 
-	for (let i = 0; i < Object.keys(payload["timestamps"]).length; i++) {
-		let questionID = Object.keys(payload["timestamps"])[i];
+	for (let i = 0; i < Object.keys(GLOBAL_PAYLOAD["timestamps"]).length; i++) {
+		let questionID = Object.keys(GLOBAL_PAYLOAD["timestamps"])[i];
 		datapoints.push({
 			dataPointIdentifier: "TS_" + questionID,
-			timeStamp: payload["timestamps"][questionID],
+			timeStamp: GLOBAL_PAYLOAD["timestamps"][questionID],
 		});
 	}
 
@@ -208,7 +283,7 @@ async function triggerAPI() {
 			method: "POST",
 			mode: "cors",
 			body: JSON.stringify({
-				respondentID: `${new Date().getTime()}`,
+				respondentID: respID == -19 ? `Test_${new Date().getTime()}` : respID,
 				datapoints: datapoints,
 				datafile_secret_key: datafile_secret_key,
 			}),
@@ -219,40 +294,19 @@ async function triggerAPI() {
 		});
 
 		const data = await res.json();
-		redemScore =
-			data.body.redemScore && data.body.redemScore >= 0
-				? data.body.redemScore
-				: -997;
+		// alert(JSON.stringify(data.body));
+		includeRespondent =
+			data.body.isRespondentInclude !== undefined
+				? data.body.isRespondentInclude
+				: true;
 	} catch (error) {
-		alert("API call failed");
+		// alert("API call failed");
 		// alert(error);
-		redemScore = -997;
+		includeRespondent = true;
 	} finally {
-		// alert("Redem Score in finally block: " + String(redemScore));
+		// alert("Include Logic finally block: " + String(includeRespondent));
 		//always proceed with the redem score not affecting the user flow of the survey tool
-		setRedemScoreToAnswer(redemScore);
+		setRespondentIncludeToAnswer(includeRespondent);
 		clearSessionStorage();
-		return redemScore;
 	}
 }
-
-function clearSessionStorage() {
-	// TODO: uncomment when done with the testing
-	// sessionStorage.removeItem(
-	// 	"sessionStorage"
-	// );
-	// sessionStorage.removeItem(
-	// 	"payload"
-	// );
-}
-
-SESSION_STORAGE_HELPERS = sessionStorage.getItem("sessionStorage")
-	? JSON.parse(sessionStorage.getItem("sessionStorage"))
-	: {
-			totalScore: -999,
-			surveyStart: false,
-			surveyCompleted: false,
-			trackSurveyDuration: false
-	  };
-
-initButtonListener();
