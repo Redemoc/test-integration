@@ -27,6 +27,7 @@ const questionID = query.pop(); //2nd param
 const position = query.pop(); //1st param
 let questionTypes = query.pop();
 let respID = query.pop();
+alert(respID)
 questionTypes =="null" ? questionTypes.split("+") : new Array();
 
 // console.log(
