@@ -1,13 +1,10 @@
-// info "|"" and "[0]" doesnt work on ingress inside of a script inside table
-// use [] in the root level as much as possible
-
-// Redem Variables
 // const BASE_URL = "http://localhost:8000";
-const BASE_URL ="https://staging.live-api.redem.io"
+const BASE_URL = "https://staging.live-api.redem.io";
 let SESSION_STORAGE_HELPERS = {};
 let GLOBAL_PAYLOAD = {};
 
 let includeRespondent = true;
+let score = -999;
 let nextBtn = null;
 let GLOBAL_ANSWER = null;
 const SCORE_TYPES = {
@@ -26,7 +23,7 @@ const questionID = query.pop(); //2nd param
 const position = query.pop(); //1st param
 let questionTypes = query.pop();
 let respID = query.pop();
-questionTypes =="null" ? questionTypes.split("+") : new Array();
+questionTypes == "null" ? questionTypes.split("+") : new Array();
 
 // console.log(
 // 	"datafile_secret_key:",
@@ -105,7 +102,7 @@ async function handleBackButtonClick(startTime) {
 		let deltaT = Date.now() - startTime;
 		GLOBAL_PAYLOAD["timestamps"][questionID] = oldDeltaT + deltaT;
 	}
-	sessionStorage.setItem("payload",JSON.stringify(GLOBAL_PAYLOAD));
+	sessionStorage.setItem("payload", JSON.stringify(GLOBAL_PAYLOAD));
 }
 
 // Handling Session Storage
@@ -171,7 +168,7 @@ async function initButtonListener() {
 				// Special code to detect copy paste
 				let inputElement;
 				let answer;
-					const input = document.querySelector(".answer_input_text input");
+				const input = document.querySelector(".answer_input_text input");
 				if (input.type == "text") {
 					answer = input.value;
 					inputElement = input;
@@ -203,7 +200,7 @@ async function initButtonListener() {
 				await handleNextButtonClick(startTime);
 			});
 
-			if(backBtn){
+			if (backBtn) {
 				backBtn.addEventListener("click", async () => {
 					await handleBackButtonClick(startTime);
 				});
@@ -219,14 +216,36 @@ async function initButtonListener() {
 initButtonListener();
 
 // API related functions
-function setRespondentIncludeToAnswer(include) {
+function setRespondentIncludeToAnswer(include, score) {
 	const input = document.querySelector(".answer_input_text input");
 	input.value = String(include);
 	input.click();
 
 	// click the button and proceed
 	nextBtn.style.display = "";
+
+	//we use this to update the form
+	setRedemSummaryToRedemForm(include, score);
+
+	//finally submit the form
 	nextBtn.click();
+}
+
+function setRedemSummaryToRedemForm(include, score) {
+	// instead of clicking button append to form and send to Ingress
+	const formular = document.getElementById("f");
+
+	var inputIncludeStatus = document.createElement("input");
+	inputIncludeStatus.setAttribute("type", "hidden");
+	inputIncludeStatus.setAttribute("name", "ReDemQualityCheck");
+	inputIncludeStatus.setAttribute("value", include ? "0" : "1");
+	formular.appendChild(inputIncludeStatus);
+
+	var inputRScore = document.createElement("input");
+	inputRScore.setAttribute("type", "hidden");
+	inputRScore.setAttribute("name", "ReDemQualityCheckScore");
+	inputRScore.setAttribute("value", score);
+	formular.appendChild(inputRScore);
 }
 
 async function triggerAPI() {
@@ -284,7 +303,9 @@ async function triggerAPI() {
 			method: "POST",
 			mode: "cors",
 			body: JSON.stringify({
-				respondentID: respID == -19 ? `Test_${new Date().getTime()}` : respID,
+				respondentID: respID.toString().includes("-")
+					? `Test_${new Date().getTime()}`
+					: respID,
 				datapoints: datapoints,
 				datafile_secret_key: datafile_secret_key,
 			}),
@@ -300,14 +321,17 @@ async function triggerAPI() {
 			data.body.isRespondentInclude !== undefined
 				? data.body.isRespondentInclude
 				: true;
+
+		score = data.body.RScore !== undefined ? data.body.RScore : -999;
 	} catch (error) {
 		// alert("API call failed");
 		// alert(error);
+		score = -999;
 		includeRespondent = true;
 	} finally {
 		// alert("Include Logic finally block: " + String(includeRespondent));
 		//always proceed with the redem score not affecting the user flow of the survey tool
-		setRespondentIncludeToAnswer(includeRespondent);
+		setRespondentIncludeToAnswer(includeRespondent, score);
 		clearSessionStorage();
 	}
 }
