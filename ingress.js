@@ -2,7 +2,8 @@
 // use [] in the root level as much as possible
 
 // Redem Variables
-const BASE_URL = "https://staging.live-api.redem.io";
+const BASE_URL = "http://localhost:8000";
+// const BASE_URL = "https://staging.live-api.redem.io";
 let SESSION_STORAGE_HELPERS = {};
 let GLOBAL_PAYLOAD = {};
 
@@ -26,7 +27,8 @@ const questionID = query.pop(); //2nd param
 const position = query.pop(); //1st param
 let questionTypes = query.pop();
 let respID = query.pop();
-console.log("Before DOMLoad", '%TAN%');
+const tan = %TAN%;
+console.log("Before DOMLoad", tan);
 questionTypes == "null" ? questionTypes.split("+") : new Array();
 
 // console.log(
@@ -219,8 +221,10 @@ async function initButtonListener() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-console.log("After DOMLoad", '%TAN%');
+const tan = %TAN%;
+console.log("After DOMLoad", tan);
 initButtonListener();
+
 });
 
 // API related functions
@@ -318,8 +322,8 @@ async function triggerAPI() {
 	// Step 4: Call the API
 
 	let respondentID = respID;
-	if(respID.toString().includes("-")) `Test_${new Date().getTime()}`
- 	if(respID.toString().includes("%TAN%")) `Resp_${new Date().getTime()}`
+	if(respID.toString().includes("-")) respondentID= `Test_${new Date().getTime()}`
+ 	if(respID.toString().includes("%TAN%")) respondentID = `Resp_${new Date().getTime()}`
 
 	try {
 		const res = await fetch(`${BASE_URL}/live-respondent/create`, {
