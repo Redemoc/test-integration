@@ -320,7 +320,6 @@ async function triggerAPI() {
 	}
 
 	// Step 4: Call the API
-
 	let respondentID = respID;
 	if(respID.toString().includes("-")) respondentID= `Test_${new Date().getTime()}`
  	if(respID.toString().includes("%TAN%")) respondentID = `Resp_${new Date().getTime()}`
