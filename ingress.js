@@ -7,6 +7,9 @@ const BASE_URL = "http://localhost:8000";
 let SESSION_STORAGE_HELPERS = {};
 let GLOBAL_PAYLOAD = {};
 
+const tan1 = '%TAN%;'
+console.log("tan1", tan1);
+
 let includeRespondent = true;
 let score = -999;
 let nextBtn = null;
@@ -316,8 +319,12 @@ async function triggerAPI() {
 
 	// Step 4: Call the API
 	let respondentID = respID;
-	if(respID.toString().includes("-")) respondentID= `Test_${new Date().getTime()}`
- 	if(respID.toString().includes("%TAN%")) respondentID = `Resp_${new Date().getTime()}`
+
+	const tan2 = '%TAN%;'
+	console.log("tan2", tan2);
+	if(respID.toString().includes("%TAN%")) respondentID = tan2
+	if(respondentID.toString().includes("-")) respondentID= `Test_${new Date().getTime()}`
+ 	if(respondentID.toString().includes("%TAN%")) respondentID = `Resp_${new Date().getTime()}`
 
 	try {
 		const res = await fetch(`${BASE_URL}/live-respondent/create`, {
