@@ -27,8 +27,6 @@ const questionID = query.pop(); //2nd param
 const position = query.pop(); //1st param
 let questionTypes = query.pop();
 let respID = query.pop();
-const tan = %TAN%;
-console.log("Before DOMLoad", tan);
 questionTypes == "null" ? questionTypes.split("+") : new Array();
 
 // console.log(
@@ -221,10 +219,7 @@ async function initButtonListener() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-const tan = %TAN%;
-console.log("After DOMLoad", tan);
 initButtonListener();
-
 });
 
 // API related functions
