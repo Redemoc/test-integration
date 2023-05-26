@@ -26,6 +26,7 @@ const questionID = query.pop(); //2nd param
 const position = query.pop(); //1st param
 let questionTypes = query.pop();
 let respID = query.pop();
+console.log("Before DOMLoad", '%TAN%');
 questionTypes == "null" ? questionTypes.split("+") : new Array();
 
 // console.log(
@@ -218,6 +219,7 @@ async function initButtonListener() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+console.log("After DOMLoad", '%TAN%');
 initButtonListener();
 });
 
@@ -314,14 +316,17 @@ async function triggerAPI() {
 	}
 
 	// Step 4: Call the API
+
+	let respondentID = respID;
+	if(respID.toString().includes("-")) `Test_${new Date().getTime()}`
+ 	if(respID.toString().includes("%TAN%")) `Resp_${new Date().getTime()}`
+
 	try {
 		const res = await fetch(`${BASE_URL}/live-respondent/create`, {
 			method: "POST",
 			mode: "cors",
 			body: JSON.stringify({
-				respondentID: respID.toString().includes("-")
-					? `Test_${new Date().getTime()}`
-					: respID,
+				respondentID: respondentID,
 				datapoints: datapoints,
 				datafile_secret_key: datafile_secret_key,
 			}),
