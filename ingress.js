@@ -2,8 +2,7 @@
 // use [] in the root level as much as possible
 
 // Redem Variables
-const BASE_URL = "http://localhost:8000";
-// const BASE_URL = "https://staging.live-api.redem.io";
+const BASE_URL = "https://staging.live-api.redem.io";
 let SESSION_STORAGE_HELPERS = {};
 let GLOBAL_PAYLOAD = {};
 
