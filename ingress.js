@@ -1,4 +1,7 @@
-// const BASE_URL = "http://localhost:8000";
+// info "|"" and "[0]" doesnt work on ingress inside of a script inside table
+// use [] in the root level as much as possible
+
+// Redem Variables
 const BASE_URL = "https://staging.live-api.redem.io";
 let SESSION_STORAGE_HELPERS = {};
 let GLOBAL_PAYLOAD = {};
@@ -144,7 +147,7 @@ GLOBAL_PAYLOAD = getPayloadFromSessionStorage();
 
 // Main Function
 async function initButtonListener() {
-	if (document.getElementById("btn_send_ahead")) {
+	// if (document.getElementById("btn_send_ahead")) {
 		nextBtn = document.getElementById("btn_send_ahead");
 		backBtn = document.getElementById("btn_send_back");
 
@@ -209,36 +212,34 @@ async function initButtonListener() {
 			// Step 4: update the session storage
 			setSessionStorage();
 		}
-	} else {
-		window.setTimeout("initButtonListener()", 10);
-	}
+	// } else {
+	// 	window.setTimeout("initButtonListener()", 10);
+	// }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
 initButtonListener();
+});
 
 // API related functions
-function setRespondentIncludeToAnswer(include, score) {
-	const input = document.querySelector(".answer_input_text input");
-	input.value = String(include);
-	input.click();
+// function setRespondentIncludeToAnswer(include, score) {
+// 	const input = document.querySelector(".answer_input_text input");
+// 	input.value = String(include);
+// 	input.click();
 
-	// click the button and proceed
-	nextBtn.style.display = "";
-
-	//we use this to update the form
-	setRedemSummaryToRedemForm(include, score);
-
-	//finally submit the form
-	nextBtn.click();
-}
+// 	//we use this to update the form and send data to ingress
+// 	setRedemSummaryToRedemForm(false, score);
+// }
 
 function setRedemSummaryToRedemForm(include, score) {
+	const screenoutStatus = include ? "0" : "1";
+
 	// instead of clicking button append to form and send to Ingress
 	const formular = document.getElementById("f");
-
 	var inputIncludeStatus = document.createElement("input");
 	inputIncludeStatus.setAttribute("type", "hidden");
 	inputIncludeStatus.setAttribute("name", "ReDemQualityCheck");
-	inputIncludeStatus.setAttribute("value", include ? "0" : "1");
+	inputIncludeStatus.setAttribute("value", screenoutStatus);
 	formular.appendChild(inputIncludeStatus);
 
 	var inputRScore = document.createElement("input");
@@ -246,6 +247,21 @@ function setRedemSummaryToRedemForm(include, score) {
 	inputRScore.setAttribute("name", "ReDemQualityCheckScore");
 	inputRScore.setAttribute("value", score);
 	formular.appendChild(inputRScore);
+
+	clearSessionStorage();
+
+	//finally submit the form
+	if (screenoutStatus === "1") {
+			//if status is 1 we should submit the form and cause a screenout and manually submit
+			formular.submit();
+		} else {
+			const input = document.querySelector(".answer_input_text input");
+			input.value = String(include);
+			input.click();
+			//if not just let it run with the normal logic of clicking next button and ending survey
+			nextBtn.style.display = "";
+			nextBtn.click();
+		}
 }
 
 async function triggerAPI() {
@@ -321,17 +337,16 @@ async function triggerAPI() {
 			data.body.isRespondentInclude !== undefined
 				? data.body.isRespondentInclude
 				: true;
-
-		score = data.body.RScore !== undefined ? data.body.RScore : -999;
+		score = data.body.redemScore !== undefined ? data.body.redemScore : -999;
 	} catch (error) {
 		// alert("API call failed");
 		// alert(error);
 		score = -999;
 		includeRespondent = true;
 	} finally {
-		// alert("Include Logic finally block: " + String(includeRespondent));
+		// alert("Include Logic finally block: " + String(includeRespondent +' : '+ score));
 		//always proceed with the redem score not affecting the user flow of the survey tool
-		setRespondentIncludeToAnswer(includeRespondent, score);
-		clearSessionStorage();
+		// setRespondentIncludeToAnswer(includeRespondent, score);
+		setRedemSummaryToRedemForm(includeRespondent, score);
 	}
 }
