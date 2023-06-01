@@ -2,13 +2,14 @@
 // use [] in the root level as much as possible
 
 // Redem Variables
-const BASE_URL = "https://staging.live-api.redem.io";
+// const BASE_URL = "http://localhost:8000";
+// const BASE_URL = "https://staging.live-api.redem.io";
+const BASE_URL = "https://beta.live-api.redem.io";
+
 let SESSION_STORAGE_HELPERS = {};
 let GLOBAL_PAYLOAD = {};
 
 const tan1 = '%TAN%;'
-console.log("tan1", tan1);
-
 let includeRespondent = true;
 let score = -999;
 let nextBtn = null;
@@ -150,7 +151,6 @@ GLOBAL_PAYLOAD = getPayloadFromSessionStorage();
 
 // Main Function
 async function initButtonListener() {
-	// if (document.getElementById("btn_send_ahead")) {
 		nextBtn = document.getElementById("btn_send_ahead");
 		backBtn = document.getElementById("btn_send_back");
 
@@ -215,24 +215,7 @@ async function initButtonListener() {
 			// Step 4: update the session storage
 			setSessionStorage();
 		}
-	// } else {
-	// 	window.setTimeout("initButtonListener()", 10);
-	// }
 }
-
-document.addEventListener("DOMContentLoaded", function () {
-initButtonListener();
-});
-
-// API related functions
-// function setRespondentIncludeToAnswer(include, score) {
-// 	const input = document.querySelector(".answer_input_text input");
-// 	input.value = String(include);
-// 	input.click();
-
-// 	//we use this to update the form and send data to ingress
-// 	setRedemSummaryToRedemForm(false, score);
-// }
 
 function setRedemSummaryToRedemForm(include, score) {
 	const screenoutStatus = include ? "0" : "1";
@@ -320,7 +303,6 @@ async function triggerAPI() {
 	let respondentID = respID;
 
 	const tan2 = '%TAN%;'
-	console.log("tan2", tan2);
 	if(respID.toString().includes("%TAN%")) respondentID = tan2
 	if(respondentID.toString().includes("-")) respondentID= `Test_${new Date().getTime()}`
  	if(respondentID.toString().includes("%TAN%")) respondentID = `Resp_${new Date().getTime()}`
@@ -355,7 +337,10 @@ async function triggerAPI() {
 	} finally {
 		// alert("Include Logic finally block: " + String(includeRespondent +' : '+ score));
 		//always proceed with the redem score not affecting the user flow of the survey tool
-		// setRespondentIncludeToAnswer(includeRespondent, score);
 		setRedemSummaryToRedemForm(includeRespondent, score);
 	}
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+	initButtonListener();
+	});
