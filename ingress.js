@@ -2,8 +2,6 @@
 // use [] in the root level as much as possible
 
 // Redem Variables
-// const BASE_URL = "http://localhost:8000";
-// const BASE_URL = "https://staging.live-api.redem.io";
 const BASE_URL = "https://beta.live-api.redem.io";
 
 let SESSION_STORAGE_HELPERS = {};
@@ -57,8 +55,13 @@ function getAnswer() {
 	let answer;
 	if (questionTypes.includes(SCORE_TYPES.OES)) {
 		const input = document.querySelector(".answer_input_text input");
-		if (input.type == "text") {
+		if (input && input.type == "text") {
 			answer = input.value;
+		}else{
+			const inputM = document.querySelector(".answer_input_text textarea");
+			if (inputM) {
+				answer = inputM.value;
+			}
 		}
 	} else if (questionTypes.includes(SCORE_TYPES.IBS)) {
 		answer = new Array();
@@ -175,9 +178,15 @@ async function initButtonListener() {
 				let inputElement;
 				let answer;
 				const input = document.querySelector(".answer_input_text input");
-				if (input.type == "text") {
+				if (input && input.type == "text") {
 					answer = input.value;
 					inputElement = input;
+				}else{
+					const inputM = document.querySelector(".answer_input_text textarea");
+					if (inputM) {
+						answer = inputM.value;
+						inputElement = inputM;
+					}
 				}
 
 				function pasteHandler() {
