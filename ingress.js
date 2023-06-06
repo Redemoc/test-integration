@@ -270,6 +270,7 @@ async function triggerAPI() {
 		datapoints.push({
 			dataPointIdentifier: "OES_" + questionID,
 			openEndedAnswer: GLOBAL_PAYLOAD["open_answers"][questionID]["answer"],
+			isCopyPaste: GLOBAL_PAYLOAD["open_answers"][questionID]["copyPasted"],
 		});
 	}
 
