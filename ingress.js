@@ -2,12 +2,12 @@
 // use [] in the root level as much as possible
 
 // Redem Variables
+// const BASE_URL = "http://localhost:8000";
+// const BASE_URL = "https://staging.live-api.redem.io";
 const BASE_URL = "https://beta.live-api.redem.io";
 
 let SESSION_STORAGE_HELPERS = {};
 let GLOBAL_PAYLOAD = {};
-
-const tan1 = '%TAN%;'
 let includeRespondent = true;
 let score = -999;
 let nextBtn = null;
@@ -29,6 +29,7 @@ const position = query.pop(); //1st param
 let questionTypes = query.pop();
 let respID = query.pop();
 questionTypes == "null" ? questionTypes.split("+") : new Array();
+let startTime;
 
 // console.log(
 // 	"datafile_secret_key:",
@@ -168,7 +169,6 @@ async function initButtonListener() {
 			await triggerAPI();
 		} else {
 			//Step 1: track timestamp when question loads
-			let startTime;
 			if (questionTypes.includes(SCORE_TYPES.TS)) {
 				startTime = Date.now();
 			}
@@ -215,6 +215,9 @@ async function initButtonListener() {
 				await handleNextButtonClick(startTime);
 			});
 
+			//TODO
+			document.onkeyup = triggerRedemSubmit; // add this event to same as button click event
+
 			if (backBtn) {
 				backBtn.addEventListener("click", async () => {
 					await handleBackButtonClick(startTime);
@@ -258,6 +261,30 @@ function setRedemSummaryToRedemForm(include, score) {
 			nextBtn.click();
 		}
 }
+
+
+async function triggerRedemSubmit(evt) {
+	var evt = evt ? evt : null;
+	if (evt && evt.keyCode == 13) {
+		var node = evt.target ? evt.target : evt.srcElement ? evt.srcElement : null;
+
+		if (document.getElementById("btn_send_ahead")) {
+			if (node.type == "text") {
+				await handleNextButtonClick(startTime);
+			}
+
+			if (node.type == "radio") {
+				await handleNextButtonClick(startTime);
+			}
+
+			if (node.type == "checkbox") {
+				console.log("checkbox submit is not supported");
+			}
+			return false;
+		}
+	}
+}
+
 
 async function triggerAPI() {
 	// Step 1: get payload from storage
@@ -311,11 +338,8 @@ async function triggerAPI() {
 
 	// Step 4: Call the API
 	let respondentID = respID;
-
-	const tan2 = '%TAN%;'
-	if(respID.toString().includes("%TAN%")) respondentID = tan2
-	if(respondentID.toString().includes("-")) respondentID= `Test_${new Date().getTime()}`
- 	if(respondentID.toString().includes("%TAN%")) respondentID = `Resp_${new Date().getTime()}`
+	if(respID.toString().includes("-")) respondentID= `Test_${new Date().getTime()}`
+ 	if(respID.toString().includes("%TAN%")) respondentID = `Resp_${new Date().getTime()}`
 
 	try {
 		const res = await fetch(`${BASE_URL}/live-respondent/create`, {
