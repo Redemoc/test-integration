@@ -3,8 +3,8 @@
 
 // Redem Variables
 // const BASE_URL = "http://localhost:8000";
-// const BASE_URL = "https://staging.live-api.redem.io";
-const BASE_URL = "https://beta.live-api.redem.io";
+const BASE_URL = "https://staging.live-api.redem.io";
+// const BASE_URL = "https://beta.live-api.redem.io";
 
 let SESSION_STORAGE_HELPERS = {};
 let GLOBAL_PAYLOAD = {};
@@ -215,7 +215,6 @@ async function initButtonListener() {
 				await handleNextButtonClick(startTime);
 			});
 
-			//TODO
 			document.onkeyup = triggerRedemSubmit; // add this event to same as button click event
 
 			if (backBtn) {
@@ -295,7 +294,7 @@ async function triggerAPI() {
 	for (let i = 0; i < Object.keys(GLOBAL_PAYLOAD["open_answers"]).length; i++) {
 		let questionID = Object.keys(GLOBAL_PAYLOAD["open_answers"])[i];
 		datapoints.push({
-			dataPointIdentifier: "OES_" + questionID,
+			dataPointIdentifier: questionID,
 			openEndedAnswer: GLOBAL_PAYLOAD["open_answers"][questionID]["answer"],
 			isCopyPaste: GLOBAL_PAYLOAD["open_answers"][questionID]["copyPasted"],
 		});
@@ -308,7 +307,7 @@ async function triggerAPI() {
 	) {
 		let questionID = Object.keys(GLOBAL_PAYLOAD["item_batteries"])[i];
 		datapoints.push({
-			dataPointIdentifier: "IBS_" + questionID,
+			dataPointIdentifier:  questionID,
 			itemBattery: GLOBAL_PAYLOAD["item_batteries"][questionID],
 			numberOfItems: GLOBAL_PAYLOAD["item_batteries"][questionID].length,
 		});
@@ -317,7 +316,7 @@ async function triggerAPI() {
 	for (let i = 0; i < Object.keys(GLOBAL_PAYLOAD["timestamps"]).length; i++) {
 		let questionID = Object.keys(GLOBAL_PAYLOAD["timestamps"])[i];
 		datapoints.push({
-			dataPointIdentifier: "TS_" + questionID,
+			dataPointIdentifier:  questionID+"_Duration",
 			timeStamp: GLOBAL_PAYLOAD["timestamps"][questionID],
 		});
 	}
@@ -331,7 +330,7 @@ async function triggerAPI() {
 			: undefined;
 		// alert("The survey is complete. Total duration: "+String(totalSurveyDuration));
 		datapoints.push({
-			dataPointIdentifier: "TOTAL_TS",
+			dataPointIdentifier: "Survey_Duration",
 			timeStamp: totalSurveyDuration,
 		});
 	}
